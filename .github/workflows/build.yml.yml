@@ -1,20 +1,20 @@
-name: Build
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+name: OWASP ZAP Integration with GitHub Actions
+
+on: [push]
+
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  zap_scan:
     runs-on: ubuntu-latest
+    name: Scan the web application
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          ref: master
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.6.1
+        with:
+          docker_name: 'owasp/zap2docker-stable'
+          target: 'http://testphp.vulnweb.com/'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
